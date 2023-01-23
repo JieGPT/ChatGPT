@@ -5,11 +5,23 @@ import { Configuration, OpenAIApi } from 'openai';
 
 dotenv.config();
 
-//console.log(process.env.OPENAI_API_KEY);
+const serverConfig = await import("./server-config.json", {
+    assert: {
+        type: "json",
+    },
+}).then(result => {return result.default;}).catch(e => console.log("Config file server-config.json not found."));
+
+
+const openaiApikey = serverConfig ? serverConfig.open_ai_config.OPENAI_API_KEY : process.env.OPENAI_API_KEY;
+
+console.log(`apiKey:<${openaiApikey}>`);
+
+ 
 
 const configuration = new Configuration({
-    apikey: process.env.OPENAI_API_KEY,
+    apiKey: openaiApikey
 });
+
 
 const openai = new OpenAIApi(configuration);
 
@@ -41,8 +53,7 @@ app.post('/', async (req, res) => {
             bot: response.data.choices[0].text
         });
 
-    }catch (error)
-    {
+    } catch (error) {
         console.log(error);
         res.status(500).send({ error });
     }

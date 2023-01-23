@@ -1,0 +1,6 @@
+{
+  "open_ai_config": {
+    "OPENAI_API_KEY": "your api key",
+    "OPENAI_ORGANIZATION": "your ORGANIZATION(optional)"
+  }
+}
