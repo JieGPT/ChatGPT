@@ -5,18 +5,19 @@ import { Configuration, OpenAIApi } from 'openai';
 
 dotenv.config();
 
-const serverConfig = await import("./server-config.json", {
-    assert: {
-        type: "json",
-    },
-}).then(result => {return result.default;}).catch(e => console.log("Config file server-config.json not found."));
+// const serverConfig = await import("./server-config.json", {
+//     assert: {
+//         type: "json",
+//     },
+// }).then(result => {return result.default;}).catch(e => console.log("Config file server-config.json not found."));
 
 
-const openaiApikey = serverConfig ? serverConfig.open_ai_config.OPENAI_API_KEY : process.env.OPENAI_API_KEY;
+// const openaiApikey = serverConfig ? serverConfig.open_ai_config.OPENAI_API_KEY : process.env.OPENAI_API_KEY;
+const openaiApikey = process.env.OPENAI_API_KEY;
 
 console.log(`apiKey:<${openaiApikey}>`);
 
- 
+
 
 const configuration = new Configuration({
     apiKey: openaiApikey
