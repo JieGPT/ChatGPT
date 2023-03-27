@@ -14,6 +14,7 @@ dotenv.config();
 
 // const openaiApikey = serverConfig ? serverConfig.open_ai_config.OPENAI_API_KEY : process.env.OPENAI_API_KEY;
 const openaiApikey = process.env.OPENAI_API_KEY;
+const port = process.env?.PORT ? process.env.PORT : 80
 
 console.log(`apiKey:<${openaiApikey}>`);
 
@@ -60,4 +61,4 @@ app.post('/', async (req, res) => {
     }
 });
 
-app.listen(5080, () => console.log('Server is running on port http://localhost:5080'));
+app.listen(port, () => console.log('Server is running on port http://localhost:5080'));
