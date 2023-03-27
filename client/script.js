@@ -1,4 +1,5 @@
 import bot from './assets/bot.svg';
+import bot2 from './assets/bot2.svg';
 import user from './assets/user.svg';
 
 const form = document.querySelector('form');
@@ -20,7 +21,6 @@ function loader(element) {
 
 function typeText(element, text) {
   let index = 0;
-
   let interval = setInterval(() => {
     if(index < text.length){
       element.innerHTML += text.charAt(index);
@@ -45,9 +45,9 @@ function chatStripe(isAi, value, uniqueId) {
       <div class="wrapper ${isAi && 'ai'}">
           <div class="chat">
               <div class="profile">
-                  <img 
+                  <img
                     src="${isAi ? bot : user}"
-                    alt="${isAi ? 'bot' : 'user'}" 
+                    alt="${isAi ? 'bot' : 'user'}"
                   />
               </div>
               <div class="message" id=${uniqueId}>${value}</div>
@@ -63,9 +63,9 @@ function chatBotStripe(isAi, value, uniqueId) {
       <div class="wrapper ai">
           <div class="chat">
               <div class="profile">
-                  <img 
-                    src="bot"
-                    alt="bot" 
+                  <img
+                    src="${bot2}"
+                    alt="${bot2}"
                   />
               </div>
               <div class="message" id=${uniqueId}>${value}</div>

@@ -50,7 +50,7 @@ body {
 }
 
 .ai {
-  background: #40414F;
+  background: #40414f;
 }
 
 .chat {
@@ -69,7 +69,7 @@ body {
   height: 36px;
   border-radius: 5px;
 
-  background: #5436DA;
+  background: #3646da;
 
   display: flex;
   justify-content: center;
@@ -101,7 +101,7 @@ body {
    * The pre-wrap value allows the browser to wrap long lines of text onto multiple lines if necessary.
    * The default value for the white-space property in CSS is "normal". This tells the browser to collapse multiple white space characters into a single space, and to wrap text onto multiple lines as needed to fit within its container.
   */
-  white-space: pre-wrap; 
+  white-space: pre-wrap;
 
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -117,11 +117,19 @@ form {
   max-width: 1280px;
   margin: 0 auto;
   padding: 10px;
-  background: #40414F;
+  background: #40414f;
 
   display: flex;
   flex-direction: row;
   gap: 10px;
+
+  border-radius: 7px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.5),
+    inset 0 0 6px rgba(255, 255, 255, 0.1);
+}
+
+form:hover {
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
 }
 
 textarea {
