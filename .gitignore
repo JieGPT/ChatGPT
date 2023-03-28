@@ -22,3 +22,4 @@ desktop/
 client/dist/
 run.ps1
 .env
+.env.backup
