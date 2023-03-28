@@ -21,3 +21,4 @@ firebase.json
 desktop/
 client/dist/
 run.ps1
+.env
