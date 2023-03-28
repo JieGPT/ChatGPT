@@ -58,16 +58,16 @@ app.get('/api/ping', async (req, res) => {
     })
 });
 
-app.get('/api/history', async(req, res) => {
+app.get('/api/history', async (req, res) => {
     console.log(req.sessionId)
     if (!req.sessionId) {
         res.status(200).send()
     } else {
         const sessionId = req.sessionId
         const hist = await client.zRange(sessionId, 0, -1)
-        const jsonData =[]
-        hist.forEach((item)=> {
-           jsonData.push(JSON.parse(item))
+        const jsonData = []
+        hist.forEach((item) => {
+            jsonData.push(JSON.parse(item))
         })
         console.log(jsonData)
         res.status(200).send(jsonData);
@@ -77,32 +77,38 @@ app.get('/api/history', async(req, res) => {
 app.options('/')
 app.post('/api/ask', async (req, res) => {
     try {
-        const prompt = req.body.prompt;
-
-        const response = await openai.createCompletion({
-            model: "text-davinci-003",
-            prompt: `${prompt}`,
-            temperature: 0,
-            max_tokens: 3000,
-            top_p: 1,
-            frequency_penalty: 0.5,
-            presence_penalty: 0,
-        });
-
-
+        const message = { role: 'user', content: req.body.message };
         const sessionId = req.sessionId
 
-        const message = {
-            user: prompt,
-            bot: response.data.choices[0].text
+        let messages = []
+
+        if (client.exists(sessionId)) {
+            messages = await client.zRange(sessionId, 0, -1)
+            messages = messages.map(JSON.parse)
+        } else {
+            messages = []
         }
 
+        messages.push(message)
+
+        const response = await openai.createChatCompletion({
+            model: "gpt-3.5-turbo",
+            messages: messages
+        })
+
+
+        const reply = response.data.choices[0].message
+
         // Save the updated chat history
-        client.zAdd(sessionId, {score: Date.now(), value:JSON.stringify(message)});
+        client.multi()
+            .zAdd(sessionId, { score: Date.now(), value: JSON.stringify(message) })
+            .zAdd(sessionId, { score: Date.now(), value: JSON.stringify(reply) })
+            .expire(sessionId, 36000)
+            .exec()
 
 
 
-        res.status(200).send(message);
+        res.status(200).send(reply);
 
     } catch (error) {
         console.log(error);
