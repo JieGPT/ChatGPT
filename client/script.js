@@ -22,7 +22,7 @@ function loader(element) {
 function typeText(element, text) {
   let index = 0;
   let interval = setInterval(() => {
-    if(index < text.length){
+    if (index < text.length) {
       element.innerHTML += text.charAt(index);
       index++;
     } else {
@@ -75,7 +75,17 @@ function chatBotStripe(isAi, value, uniqueId) {
   )
 }
 
-const handleSubmit = async(e) => {
+window.onload = async (e) => {
+  const response = await fetch(import.meta.env.VITE_API_HOST + '/api/history', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include'
+  })
+}
+
+const handleSubmit = async (e) => {
   e.preventDefault();
 
   const data = new FormData(form);
@@ -98,20 +108,21 @@ const handleSubmit = async(e) => {
 
   // fetch data from server -> bot's response
 
-  const response = await fetch(import.meta.env.VITE_API_HOST, {
+  const response = await fetch(import.meta.env.VITE_API_HOST + '/api/ask', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       prompt: data.get('prompt')
-    })
+    }),
+    credentials: 'include'
   })
 
   clearInterval(loadInterval);
   messageDiv.innerHTML = '';
 
-  if(response.ok) {
+  if (response.ok) {
     const data = await response.json();
     const parsedData = data.bot.trim();
 
@@ -127,7 +138,7 @@ const handleSubmit = async(e) => {
 
 form.addEventListener('submit', handleSubmit);
 form.addEventListener('keyup', (e) => {
-  if(e.keyCode === 13) {
+  if (e.keyCode === 13) {
     handleSubmit(e);
   }
 })

@@ -1,43 +1,81 @@
 import express from 'express';
 import * as dotenv from 'dotenv';
-import cors from 'cors';
 import { Configuration, OpenAIApi } from 'openai';
+import redis from 'redis';
+import { v4 as uuid } from 'uuid';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
-// const serverConfig = await import("./server-config.json", {
-//     assert: {
-//         type: "json",
-//     },
-// }).then(result => {return result.default;}).catch(e => console.log("Config file server-config.json not found."));
+// redis client
+const client = redis.createClient({
+    url: process.env.REDIS_URL ? process.env.REDIS_URL : ''
+});
 
 
-// const openaiApikey = serverConfig ? serverConfig.open_ai_config.OPENAI_API_KEY : process.env.OPENAI_API_KEY;
+
 const openaiApikey = process.env.OPENAI_API_KEY;
-const port = process.env?.PORT ? process.env.PORT : 80
 
-console.log(`apiKey:<${openaiApikey}>`);
-
-
+const port = process.env?.PORT ? process.env.PORT : 5080
 
 const configuration = new Configuration({
     apiKey: openaiApikey
 });
 
-
 const openai = new OpenAIApi(configuration);
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
-app.get('/', async (req, res) => {
+
+app.use(express.json());
+app.use(cookieParser())
+
+app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') { next(); return }
+    let sessionId = req.cookies?.sessionId;
+
+    if (!sessionId) {
+        sessionId = uuid(); // Generate a unique session id
+        res.cookie('sessionId', sessionId, {
+            sameSite: 'none',
+            secure: true
+        }); // Set the session id in the cookie
+    }
+    req.sessionId = sessionId;
+    next();
+});
+
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_HOST); // Replace with your frontend URL
+    res.setHeader('Access-Control-Allow-Credentials', 'true'); // Enable sending cookies
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With, X-authentication, X-client, Authorization')
+    next();
+});
+
+app.get('/api/ping', async (req, res) => {
     res.status(200).send({
         message: 'Hello from OpenAI',
     })
 });
 
-app.post('/', async (req, res) => {
+app.get('/api/history', async(req, res) => {
+    console.log(req.sessionId)
+    if (!req.sessionId) {
+        res.status(200).send()
+    } else {
+        const sessionId = req.sessionId
+        const hist = await client.zRange(sessionId, 0, -1)
+        const jsonData =[]
+        hist.forEach((item)=> {
+           jsonData.push(JSON.parse(item))
+        })
+        console.log(jsonData)
+        res.status(200).send(jsonData);
+    }
+})
+
+app.options('/')
+app.post('/api/ask', async (req, res) => {
     try {
         const prompt = req.body.prompt;
 
@@ -51,9 +89,20 @@ app.post('/', async (req, res) => {
             presence_penalty: 0,
         });
 
-        res.status(200).send({
+
+        const sessionId = req.sessionId
+
+        const message = {
+            user: prompt,
             bot: response.data.choices[0].text
-        });
+        }
+
+        // Save the updated chat history
+        client.zAdd(sessionId, {score: Date.now(), value:JSON.stringify(message)});
+
+
+
+        res.status(200).send(message);
 
     } catch (error) {
         console.log(error);
@@ -61,4 +110,5 @@ app.post('/', async (req, res) => {
     }
 });
 
-app.listen(port, () => console.log('Server is running on port http://localhost:5080'));
+await client.connect()
+app.listen(port, () => console.log('Server is running on port http://0.0.0.0:' + port));
