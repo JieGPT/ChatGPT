@@ -19,4 +19,5 @@ server-config.json
 .firebaserc
 firebase.json
 desktop/
+dist/
 run.ps1
